@@ -58,3 +58,4 @@
         redis-cli -h {{ hostvars[inventory_hostname]['ansible_ssh_host'] }} -p {{ redis_cluster_begin_port + item | int }} config set requirepass {{ redis_passwd }}
         redis-cli -h {{ hostvars[inventory_hostname]['ansible_ssh_host'] }} -p {{ redis_cluster_begin_port + item | int }} -a {{ redis_passwd }}  config rewrite
   with_sequence: start=0 end="{{ redis_cluster_node_port_size - 1}}" stride=1
+  when: redis_passwd != ''
