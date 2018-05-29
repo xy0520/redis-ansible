@@ -1,0 +1,21 @@
+---
+- name: reset | shutdown redis service
+  shell: "ps aux | grep redis | grep -v grep | awk '{print $2}' | xargs kill -9"
+  ignore_errors: yes
+
+- name: reset | delete some files and directories
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ redis_data_path }}"
+    - "{{ redis_src_path }}"
+    - "/root/appendonly.aof"
+    - "/root/dump.rdb"
+    - "/usr/local/bin/redis-benchmark"
+    - "/usr/local/bin/redis-check-aof"
+    - "/usr/local/bin/redis-check-rdb"
+    - "/usr/local/bin/redis-cli"
+    - "/usr/local/bin/redis-sentinel"
+    - "/usr/local/bin/redis-server"
+  ignore_errors: yes

@@ -1,0 +1,6 @@
+yum_cluster_packages:
+  - ruby
+  - rubygems
+  - ruby-devel
+  - rpm-build
+  - zlib-devel

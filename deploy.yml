@@ -1,0 +1,10 @@
+- hosts: localhost
+  roles:
+  - { role: know_host }
+
+- hosts: redis
+  roles:
+  - { role: redis/verify}
+  - { role: redis/pre}
+  - { role: redis/install}
+  - { role: redis/configure}

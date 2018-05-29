@@ -1,0 +1,8 @@
+port {{ redis_cluster_begin_port + item | int }}
+bind 0.0.0.0
+daemonize yes
+pidfile {{ redis_data_path }}/{{ redis_cluster_begin_port + item | int }}/redis.pid
+cluster-enabled yes
+cluster-config-file {{ redis_data_path }}/{{ redis_cluster_begin_port + item | int }}/nodes.conf
+cluster-node-timeout 10100
+appendonly yes

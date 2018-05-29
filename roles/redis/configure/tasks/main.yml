@@ -1,0 +1,2 @@
+---
+- include_tasks: "{{ redis_deploy_type }}.yml"

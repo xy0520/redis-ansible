@@ -1,0 +1,7 @@
+---
+- name: verify | check redis deploy type
+  assert:
+    that: redis_deploy_type in redis_deploy_type_list
+  run_once: yes
+
+- include_tasks: "{{ redis_deploy_type }}.yml"

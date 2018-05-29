@@ -1,0 +1,4 @@
+yum_packages:
+  - gcc
+  - gcc-c++
+  - make

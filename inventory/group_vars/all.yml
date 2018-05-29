@@ -1,0 +1,23 @@
+---
+software_files_path: "~"
+software_install_path: "/usr/local"
+
+redis_version: "4.0.1"
+redis_name: "redis-{{ redis_version }}"
+
+redis_file: "{{ redis_name }}.tar.gz"
+redis_file_path: "{{ software_files_path }}/{{ redis_file }}"
+redis_file_url: "http://download.redis.io/releases/redis-{{ redis_version }}.tar.gz"
+redis_src_path: "{{ software_install_path }}/{{ redis_name }}"
+
+redis_data_path: "/var/run/redis"
+
+redis_deploy_type: 'cluster'
+
+redis_cluster_node_port_size: 2
+redis_cluster_min_port_size: 6
+redis_cluster_begin_port: 7000
+redis_cluster_replicas: 1
+redis_cluster_trib_separator: " "
+
+redis_passwd: "123456"

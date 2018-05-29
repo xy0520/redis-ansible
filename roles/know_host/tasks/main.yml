@@ -1,0 +1,6 @@
+---
+- name: add know_hosts
+  shell: |
+    ssh-keygen -R {{hostvars[item].get('ansible_ssh_host')}}
+    ssh-keyscan {{hostvars[item].get('ansible_ssh_host')}} >> ~/.ssh/known_hosts
+  with_items: "{{groups['all']}}"

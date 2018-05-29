@@ -1,0 +1,12 @@
+---
+- name: pre | RedHat -> install yum packages
+  yum:
+    name: "{{ item }}"
+    state: latest
+  with_items: "{{ yum_packages }}"
+
+- name: pre | RedHat -> close firewalld
+  service:
+    name: firewalld
+    state: stopped
+    enabled: false

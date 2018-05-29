@@ -1,0 +1,31 @@
+---
+- name: install | Check if redis local file is already configured.
+  stat: path={{ redis_file_path }}
+  connection: local
+  register: redis_file_result
+
+- name: install | Create software directory.
+  file: path={{ software_files_path }} state=directory
+  connection: local
+  when: not redis_file_result.stat.exists
+
+- name: install | Download redis file.
+  get_url: url={{ redis_file_url }} dest={{ software_files_path }}
+  connection: local
+  when: not redis_file_result.stat.exists
+
+- name: install | Confirm the existence of the installation directory.
+  file: path={{ software_install_path }} state=directory
+
+- name: install | Copy redis file to agent.
+  unarchive:
+    src: "{{ redis_file_path }}"
+    dest: "{{ software_install_path }}"
+    creates: "{{ redis_src_path }}"
+    copy: "yes"
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: install | Build redis.
+  shell: "cd {{ redis_src_path }}/src && make && make install"

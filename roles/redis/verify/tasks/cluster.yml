@@ -1,0 +1,14 @@
+---
+- name: verify | cluster -> check redis cluster node size
+  assert:
+    that: (groups['redis'] | length()) == 3 or (groups['redis'] | length()) == 6
+    msg: "redis cluster node size must be 3 or 6"
+  when: redis_deploy_type == 'cluster'
+  run_once: yes
+
+- name: verify | cluster -> check redis cluster deploy size
+  assert:
+    that: redis_cluster_node_port_size * (groups['redis'] | length()) >= 6
+    msg: "redis cluster deploy size must be more than 6"
+  when: redis_deploy_type == 'cluster'
+  run_once: yes
