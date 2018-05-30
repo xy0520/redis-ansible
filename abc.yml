@@ -1,0 +1,6 @@
+- hosts: redis1 redis2 redis3
+  gather_facts: false
+  tasks:
+  - debug:
+      msg: "{{ group_names }}"
+    run_once: yes

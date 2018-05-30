@@ -1,6 +1,17 @@
 ---
-- name: reset | shutdown redis service
-  shell: "ps aux | grep redis | grep -v grep | awk '{print $2}' | xargs kill -9"
+- name: reset | include configure vars
+  include_vars: "../configure/defaults/main.yml"
+
+- name: reset | stop and disable redis service.
+  service: "name=redis{{ item.port }} state=stopped enabled=no"
+  with_items: "{{ redis_service }}"
+  ignore_errors: yes
+
+- name: reset | delete Redis service.
+  file:
+    path: "{{ item.service }}"
+    state: absent
+  with_items: "{{ redis_service }}"
   ignore_errors: yes
 
 - name: reset | delete some files and directories
@@ -10,8 +21,6 @@
   with_items:
     - "{{ redis_data_path }}"
     - "{{ redis_src_path }}"
-    - "/root/appendonly.aof"
-    - "/root/dump.rdb"
     - "/usr/local/bin/redis-benchmark"
     - "/usr/local/bin/redis-check-aof"
     - "/usr/local/bin/redis-check-rdb"

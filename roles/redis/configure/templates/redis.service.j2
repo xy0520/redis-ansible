@@ -1,0 +1,23 @@
+[Unit]
+#定义描述
+Description=The Redis {{ item.port }} Server
+#指定了在systemd在执行完那些target之后再启动该服务
+After=network.target remote-fs.target nss-lookup.target
+
+[Service]
+#定义Service 的运行type
+Type=forking
+#以下定义systemctl start |stop |reload *.service  的每个执行方法，具体命令#需要写绝对路径
+PIDFile={{ item.pid }}
+ExecStart={{ item.script }} start
+ExecReload={{ item.script }} reload
+ExecStop={{ item.script }} stop
+# Send SIGWINCH for graceful stop
+KillSignal=SIGWINCH
+KillMode=mixed
+#创建私有的内存临时空间
+PrivateTmp=true
+User=root
+Group=root
+[Install]
+WantedBy=multi-user.target

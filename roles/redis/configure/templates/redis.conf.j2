@@ -1,0 +1,11 @@
+port {{ item.port }}
+bind 0.0.0.0
+daemonize yes
+loglevel "{{ redis_log_level }}"
+dir "{{ redis_data_path }}/{{ item.port }}"
+logfile "{{ redis_log_dir }}/{{ item.log }}"
+pidfile "{{ redis_data_path }}/{{ item.port }}/redis.pid"
+cluster-enabled yes
+cluster-config-file "{{ redis_data_path }}/{{ item.port }}/nodes.conf"
+cluster-node-timeout 10100
+appendonly yes

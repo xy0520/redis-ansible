@@ -1,61 +1,40 @@
 ---
-- name: configure | cluster -> check redis configure directory
-  file:
-    path: "{{ redis_data_path }}/{{ redis_cluster_begin_port + item | int }}"
-    state: directory
-    owner: root
-    group: root
-    mode: "0755"
-  with_sequence: start=0 end="{{ redis_cluster_node_port_size - 1}}" stride=1
-
-- name: configure | cluster -> copy configure file to redis configure directory
-  template:
-    src: "redis.cluster.conf.j2"
-    dest: "{{ redis_data_path }}/{{ redis_cluster_begin_port + item | int }}/redis.conf"
-    owner: root
-    group: root
-    mode: "0755"
-  with_sequence: start=0 end="{{ redis_cluster_node_port_size - 1}}" stride=1
-
-- name: configure | cluster -> install yum packages
+- name: Configure | Cluster -> install yum cluster packages
   yum:
     name: "{{ item }}"
     state: latest
   with_items: "{{ yum_cluster_packages }}"
-  when: inventory_hostname == groups['redis'][0]
+  when:
+  - inventory_hostname == groups[all_redis_node_group][0]
+  - ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'
 
-- name: configure | cluster -> install redis gems.
+- name: Configure | Cluster -> install redis gems.
   gem:
     name: redis
     state: present
     version: 3.0.0
     user_install: no
-  when: inventory_hostname == groups['redis'][0]
+  when: inventory_hostname == groups[all_redis_node_group][0]
 
-
-- name: configure | cluster -> start redis
-  shell: "redis-server {{ redis_data_path }}/{{ redis_cluster_begin_port + item | int }}/redis.conf"
-  with_sequence: start=0 end="{{ redis_cluster_node_port_size - 1}}" stride=1
-
-- name: configure | cluster -> Del yes or no the option.
+- name: Configure | Cluster -> Del yes or no the option.
   lineinfile:
     regexp: '        yes_or_die \"Can I set the above configuration\?\"'
     line: '        #yes_or_die "Can I set the above configuration?"'
     path: "{{ redis_src_path }}/src/redis-trib.rb"
 
-- name: configure | cluster -> create cluster
-  shell: |
-    {{ redis_src_path }}/src/redis-trib.rb create --replicas {{ redis_cluster_replicas }} {% for item in groups['redis'] -%}
-    {% for num in range(0,redis_cluster_node_port_size) -%}
-    {{ hostvars[item]['ansible_ssh_host'] }}:{{redis_cluster_begin_port + num | int}}{{ redis_cluster_trib_separator }}
+- name: Configure | Cluster -> create cluster
+  shell: >
+    {{ redis_src_path }}/src/redis-trib.rb create --replicas {{ redis_cluster_replicas }} {% for item in groups[all_redis_node_group] -%}
+    {% for service in redis_service -%}
+    {{ hostvars[item]['ansible_ssh_host'] }}:{{service.port}}{{ redis_cluster_trib_separator }}
     {%- endfor %}
     {%- endfor %}
-  when: inventory_hostname == groups['redis'][0]
+  when: inventory_hostname == groups[all_redis_node_group][0]
 
-- name: configure | cluster -> set redis cluster password
+- name: Configure | Cluster -> set redis password
   shell: |
-        redis-cli -h {{ hostvars[inventory_hostname]['ansible_ssh_host'] }} -p {{ redis_cluster_begin_port + item | int }} config set masterauth {{ redis_passwd }}
-        redis-cli -h {{ hostvars[inventory_hostname]['ansible_ssh_host'] }} -p {{ redis_cluster_begin_port + item | int }} config set requirepass {{ redis_passwd }}
-        redis-cli -h {{ hostvars[inventory_hostname]['ansible_ssh_host'] }} -p {{ redis_cluster_begin_port + item | int }} -a {{ redis_passwd }}  config rewrite
-  with_sequence: start=0 end="{{ redis_cluster_node_port_size - 1}}" stride=1
+        redis-cli -h {{ hostvars[inventory_hostname]['ansible_ssh_host'] }} -p {{ item.port }} config set masterauth {{ redis_passwd }}
+        redis-cli -h {{ hostvars[inventory_hostname]['ansible_ssh_host'] }} -p {{ item.port }} config set requirepass {{ redis_passwd }}
+        redis-cli -h {{ hostvars[inventory_hostname]['ansible_ssh_host'] }} -p {{ item.port }} -a {{ redis_passwd }}  config rewrite
+  with_items: "{{ redis_service }}"
   when: redis_passwd != ''

@@ -1,2 +1,43 @@
 ---
-- include_tasks: "{{ redis_deploy_type }}.yml"
+- name: Configure | Confirm the redis log output directory exists
+  file: path={{ redis_log_dir }} state=directory
+
+- name: Configure | Check the redis data directory
+  file:
+    path: "{{ item.dir }}"
+    state: directory
+    mode: 0644
+    owner: "root"
+    group: "root"
+  with_items: "{{ redis_service }}"
+
+- name: Configure | Copy the redis configuration file
+  template:
+    src: "redis.conf.j2"
+    dest: "{{ item.conf }}"
+    mode: 0644
+    owner: "root"
+    group: "root"
+  with_items: "{{ redis_service }}"
+
+- name: Configure | Copy redis execution script
+  template:
+    src: redis.sh.j2
+    dest: "{{ item.script }}"
+    mode: 0755
+  with_items: "{{ redis_service }}"
+
+- name: Configure | Copy the redis service file
+  template:
+    src: redis.service.j2
+    dest: "{{ item.service}}"
+    mode: 0755
+  with_items: "{{ redis_service }}"
+
+- name: Configure | Ensure Redis is running and enabled on boot.
+  service: "name=redis{{ item.port }} state=started enabled=yes"
+  with_items: "{{ redis_service }}"
+
+- name: Configure | include deploy tasks
+  include_tasks: "{{ redis_deploy_type }}.yml"
+  when: redis_deploy_type == 'cluster'
