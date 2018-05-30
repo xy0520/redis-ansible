@@ -7,18 +7,31 @@ PID_FILE="{{ item.pid }}"
 REDIS_CONFIG="{{ item.conf }}"
 
 start() {
- echo "Start Redis {{ item.port }} Server"
- $EXEC $REDIS_CONFIG
+    echo "Start Redis {{ item.port }} Server"
+    if [ -f $PID_FILE ]
+    then
+        echo "$PID_FILE exists, process is already running or crashed"
+    else
+        echo "Starting Redis {{ item.port }} server..."
+        $EXEC $REDIS_CONFIG
+    fi
 }
 
 stop() {
-    echo "Stop Redis {{ item.port }} Server"
-    kill -9 `cat $PID_FILE`
-}
-
-restart() {
-    stop
-    start
+    if [ ! -f $PID_FILE ]
+    then
+        echo "$PID_FILE does not exist, process is not running"
+    else
+        PID=$(cat $PID_FILE)
+        echo "Stopping ..."
+        kill -9 $PID
+        while [ -x /proc/${PID} ]
+        do
+            echo "Waiting for Redis {{ item.port }} to shutdown ..."
+            sleep 1
+        done
+        echo "Redis {{ item.port }} stopped"
+    fi
 }
 
 case "$1" in
@@ -28,11 +41,8 @@ case "$1" in
     stop)
         stop
         ;;
-    restart)
-        restart
-        ;;
     *)
-        echo $"Usage: $0 {start|stop|restart}"
-        exit 2
+        echo "Please use start or stop as first argument"
+        ;;
 esac
 exit $?

@@ -10,7 +10,6 @@ Type=forking
 #以下定义systemctl start |stop |reload *.service  的每个执行方法，具体命令#需要写绝对路径
 PIDFile={{ item.pid }}
 ExecStart={{ item.script }} start
-ExecReload={{ item.script }} restart
 ExecStop={{ item.script }} stop
 # Send SIGWINCH for graceful stop
 KillSignal=SIGWINCH
