@@ -2,6 +2,9 @@
 - name: verify | check redis deploy type
   assert:
     that: redis_deploy_type in redis_deploy_type_list
+    msg: "redis deploy must in {{ redis_deploy_type_list | to_yaml }}"
   run_once: yes
 
-- include_tasks: "{{ redis_deploy_type }}.yml"
+- name: verify | include cluster verify setting
+  include_tasks: "cluster.yml"
+  when: redis_deploy_type == 'cluster'
