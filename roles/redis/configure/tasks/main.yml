@@ -42,19 +42,12 @@
   include_tasks: "{{ redis_deploy_type }}.yml"
   when: redis_deploy_type == 'cluster'
 
-- name: Configure | set redis masterauth password
-  shell: redis-cli -h {{ hostvars[inventory_hostname]['ansible_ssh_host'] }} -p {{ item.port }} config set masterauth {{ redis_passwd }}
-  with_items: "{{ redis_service }}"
-  when:
-    - redis_passwd != ''
-    - redis_deploy_type != 'single'
-
-- name: Configure | set redis requirepass password
-  shell: redis-cli -h {{ hostvars[inventory_hostname]['ansible_ssh_host'] }} -p {{ item.port }} config set requirepass {{ redis_passwd }}
-  with_items: "{{ redis_service }}"
-  when: redis_passwd != ''
-
-- name: Configure | save redis password
-  shell: redis-cli -h {{ hostvars[inventory_hostname]['ansible_ssh_host'] }} -p {{ item.port }} -a {{ redis_passwd }}  config rewrite
+- name: Configure | set redis password
+  shell: |
+    {% if redis_deploy_type != 'single' %}
+    redis-cli -h {{ hostvars[inventory_hostname]['ansible_ssh_host'] }} -p {{ item.port }} config set masterauth {{ redis_passwd }}
+    {% endif %}
+    redis-cli -h {{ hostvars[inventory_hostname]['ansible_ssh_host'] }} -p {{ item.port }} config set requirepass {{ redis_passwd }}
+    redis-cli -h {{ hostvars[inventory_hostname]['ansible_ssh_host'] }} -p {{ item.port }} -a {{ redis_passwd }}  config rewrite
   with_items: "{{ redis_service }}"
   when: redis_passwd != ''
