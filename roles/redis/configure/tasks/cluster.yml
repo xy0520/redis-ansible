@@ -30,11 +30,3 @@
     {%- endfor %}
     {%- endfor %}
   when: inventory_hostname == groups[all_redis_node_group][0]
-
-- name: Configure | Cluster -> set redis password
-  shell: |
-        redis-cli -h {{ hostvars[inventory_hostname]['ansible_ssh_host'] }} -p {{ item.port }} config set masterauth {{ redis_passwd }}
-        redis-cli -h {{ hostvars[inventory_hostname]['ansible_ssh_host'] }} -p {{ item.port }} config set requirepass {{ redis_passwd }}
-        redis-cli -h {{ hostvars[inventory_hostname]['ansible_ssh_host'] }} -p {{ item.port }} -a {{ redis_passwd }}  config rewrite
-  with_items: "{{ redis_service }}"
-  when: redis_passwd != ''

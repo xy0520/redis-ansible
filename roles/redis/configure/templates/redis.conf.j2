@@ -5,7 +5,9 @@ loglevel "{{ redis_log_level }}"
 dir "{{ redis_data_path }}/{{ item.port }}"
 logfile "{{ redis_log_dir }}/{{ item.log }}"
 pidfile "{{ redis_data_path }}/{{ item.port }}/redis.pid"
+{% if redis_deploy_type == 'cluster' %}
 cluster-enabled yes
 cluster-config-file "{{ redis_data_path }}/{{ item.port }}/nodes.conf"
 cluster-node-timeout 10100
+{% endif %}
 appendonly yes

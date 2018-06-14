@@ -35,9 +35,26 @@
   with_items: "{{ redis_service }}"
 
 - name: Configure | Ensure Redis is running and enabled on boot.
-  service: "name=redis{{ item.port }} state=started enabled=yes"
+  service: "name={{ item.service_name }} state=started enabled=yes"
   with_items: "{{ redis_service }}"
 
 - name: Configure | include deploy tasks
   include_tasks: "{{ redis_deploy_type }}.yml"
   when: redis_deploy_type == 'cluster'
+
+- name: Configure | set redis masterauth password
+  shell: redis-cli -h {{ hostvars[inventory_hostname]['ansible_ssh_host'] }} -p {{ item.port }} config set masterauth {{ redis_passwd }}
+  with_items: "{{ redis_service }}"
+  when:
+    - redis_passwd != ''
+    - redis_deploy_type != 'single'
+
+- name: Configure | set redis requirepass password
+  shell: redis-cli -h {{ hostvars[inventory_hostname]['ansible_ssh_host'] }} -p {{ item.port }} config set requirepass {{ redis_passwd }}
+  with_items: "{{ redis_service }}"
+  when: redis_passwd != ''
+
+- name: Configure | save redis password
+  shell: redis-cli -h {{ hostvars[inventory_hostname]['ansible_ssh_host'] }} -p {{ item.port }} -a {{ redis_passwd }}  config rewrite
+  with_items: "{{ redis_service }}"
+  when: redis_passwd != ''

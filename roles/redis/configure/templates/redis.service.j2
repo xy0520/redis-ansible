@@ -1,6 +1,6 @@
 [Unit]
 #定义描述
-Description=The Redis {{ item.port }} Server
+Description=The {{ item.service_name }} Server
 #指定了在systemd在执行完那些target之后再启动该服务
 After=network.target remote-fs.target nss-lookup.target
 

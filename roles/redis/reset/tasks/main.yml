@@ -3,7 +3,7 @@
   include_vars: "../configure/defaults/main.yml"
 
 - name: reset | stop and disable redis service.
-  service: "name=redis{{ item.port }} state=stopped enabled=no"
+  service: "name={{ item.service_name }} state=stopped enabled=no"
   with_items: "{{ redis_service }}"
   ignore_errors: yes
 

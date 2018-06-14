@@ -9,8 +9,8 @@ os_service_dir: /usr/lib/systemd/system
 
 redis_service_str: >-
   [
-  {% if redis_deploy_type == 'cluster' -%}
-  {% for item in range(0,redis_cluster_node_port_size) -%}
+  {% if redis_deploy_type == 'cluster' %}
+  {% for item in range(0,redis_cluster_node_port_size) %}
   {
   port: "{{ redis_cluster_begin_port + item | int }}",
   dir: "{{ redis_data_path }}/{{ redis_cluster_begin_port + item | int }}",
@@ -18,11 +18,23 @@ redis_service_str: >-
   pid: "{{ redis_data_path }}/{{ redis_cluster_begin_port + item | int }}/redis.pid",
   log: "{{ redis_cluster_begin_port + item | int }}.log",
   script: "{{ redis_data_path }}/{{ redis_cluster_begin_port + item | int }}/redis{{ redis_cluster_begin_port + item | int }}.sh",
+  service_name: "redis{{ redis_cluster_begin_port + item | int }}",
   service: "{{ os_service_dir }}/redis{{ redis_cluster_begin_port + item | int }}.service"
   }
   {{ ',' if redis_cluster_node_port_size > item + 1 else '' }}
-  {%- endfor %}
-  {%- endif %}
+  {% endfor %}
+  {% elif redis_deploy_type == 'single' %}
+  {
+  port: "{{ redis_single_port }}",
+  dir: "{{ redis_data_path }}/{{ redis_single_port }}",
+  conf: "{{ redis_data_path }}/{{ redis_single_port }}/redis.conf",
+  pid: "{{ redis_data_path }}/{{ redis_single_port }}/redis.pid",
+  log: "redis.log",
+  script: "{{ redis_data_path }}/{{ redis_single_port }}/redis.sh",
+  service_name: "redis",
+  service: "{{ os_service_dir }}/redis.service"
+  }
+  {% endif %}
   ]
 
 redis_service: "{{ redis_service_str | from_yaml }}"
